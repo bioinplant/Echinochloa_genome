@@ -1,0 +1,22 @@
+###define PBS arguments
+#PBS -N KaKsAHAT
+#PBS -l nodes=node2:ppn=10,walltime=30:00:00:00
+#PBS -q high
+#PBS -j oe
+#PBS -o KaKs_AHAT_log
+
+###job starting reminder
+echo "Starting job at:"
+date
+hostname
+
+###job dir
+cd $PBS_O_WORKDIR
+
+###job command
+
+perl get_ortholog_pair_KaKs.pl AH_cds.fasta AH_prot.fasta AT_cds.fasta AT_prot.fasta AH_AT.pairs
+
+###job finished reminder
+echo "Finished at:"
+date

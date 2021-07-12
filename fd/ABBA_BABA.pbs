@@ -1,0 +1,46 @@
+#PBS -N ABBA_BABA_1
+#PBS -l nodes=21:ppn=10,walltime=30:00:00:00
+#PBS -q high
+#PBS -j oe
+#PBS -o log_ABBA_BABA_1
+
+echo "Start at:"
+date
+
+#echo $PBS_O_HOST
+#cd $PBS_O_WORKDIR
+
+source activate python2_env
+
+###define arguments
+sp_list='/public4/wudy/Echinochloa_reseq/ibs_adm/sample.list'
+pop_file='/public4/wudy/Echinochloa_reseq/ibs_adm/group_assign.txt'
+P1='35ECor'
+P2='41Eccg'
+P3='22EOYR'
+P4='11Ew'
+vcf_prefix='AH_maf5_miss01'
+
+###keep this arguments
+ABBA_R='/public3/jial/weedyrice/Introgression_test/ABBA_BABA_simon/00_scripts/ABBA_BABA.R'
+gg='/public/home/jial/software/genomics_general/'
+chr_infor='/public4/wudy/Echinochloa_reseq/ibs_adm/ec_chr_length.txt'
+
+##转换geno格式
+python ${gg}/VCF_processing/parseVCF.py -i ${vcf_prefix}.vcf | gzip > ${vcf_prefix}.geno.gz
+	
+##1. ABBA BABA genome-wide
+###popsFile中samples需要在VCF中存在，否则报错
+python ${gg}/freq.py -g ${vcf_prefix}.geno.gz -p ${P1} -p ${P2} -p ${P3} -p ${P4} --popsFile ${pop_file} --target derived -o ${vcf_prefix}.derFreq.tsv.gz -t 10
+###去除nan
+less ${vcf_prefix}.derFreq.tsv.gz |grep -v "nan" > ${vcf_prefix}.filtered.derFreq.tsv.gz
+
+###R脚本统计结果
+R --no-save <${ABBA_R} >GW_result_${vcf_prefix} --args ${vcf_prefix}.filtered.derFreq.tsv.gz ${chr_infor} ${P1} ${P2} ${P3}
+echo WholeGenome `less GW_result_${vcf_prefix} |grep -E "^${P1}"` >>GW_result_whole_genome
+
+##2. ABBA BABA sliding windows
+python ${gg}/ABBABABAwindows.py -g ${vcf_prefix}.geno.gz -f phased -o ${vcf_prefix}.w100m2s20.csv.gz -P1 ${P1} -P2 ${P2} -P3 ${P3} -O ${P4} --popsFile ${pop_file} -w 100000 -m 200 -s 50000 --minData 0.5 -T 10
+
+echo "Finished at:"
+date

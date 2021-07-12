@@ -1,0 +1,25 @@
+###define PBS arguments
+#PBS -N ASTRAL_AB
+#PBS -l nodes=node3:ppn=20,walltime=2400:00:00
+#PBS -q high
+#PBS -j oe
+#PBS -o astral_AB_log
+
+###job starting reminder
+echo "Starting job at:"
+date
+hostname
+
+###job dir
+cd $PBS_O_WORKDIR
+
+###job command
+
+#java -jar /public4/wudy/software/ASTRAL-master/ASTRAL-master/astral.5.7.4.jar -i snp50_AB.nwk  -o snp50_AB_out.tre 2>snp50_AB_out.log
+java -jar /public4/wudy/software/ASTRAL-master/ASTRAL-master/astral.5.7.4.jar -i snp40_AB.nwk  -o snp40_AB_out.tre 2>snp40_AB_out.log
+java -jar /public4/wudy/software/ASTRAL-master/ASTRAL-master/astral.5.7.4.jar -i snp30_AB.nwk  -o snp30_AB_out.tre 2>snp30_AB_out.log
+
+
+###job finished reminder
+echo "Finished at:"
+date
