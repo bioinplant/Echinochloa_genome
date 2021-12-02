@@ -3,11 +3,17 @@
 The initial assembly of *E. oryzicola* was produced in our previous study using Pacbio CLR sequencing (Contig N50 = 1.87Mb) ([Ye et al., 2020](https://www.cell.com/molecular-plant/fulltext/S1674-2052(20)30214-8)). Analysis based on collinear homologous genes between two subgenome revealed the divergence event between subgenomes at 4.6 mya and merge at 1.9 mya.
 
 ## Subgenome Phasing
+![](https://github.com/bioinplant/Echinochloa_genome/blob/main/hic_scaffolding/eo/eo_fig/6.png)
+>Work flow of DipHiC subgenome phasing in tetraploid. (a) clustering based on k-mer mapping depth. (b) clustering based on allelic contigs information. (c) clustering based on linkage to push unclustered contigs into clusters.
+
 Previous study revealed that diploid *Echinohloa haploclada* is close genetically to one subgenome from *E. oryzicola*. Therefore chromosome-level assembly of diploid *E. haploclada* was selected due to its close phylogenic relationship and high-quality genome assembly.
 
 ### Depth Clustering
  
 Firstly, whole genome sequences of *E. haploclada* were split into 100-mer short reads using `get_Kmer_from_fa.pl`, and these reads were mapped to the *E. oryzicola* contigs using `BWA` or `bowtie2`. The mapping depth was counted using `samtools`, and average depth for each contig was calculated (). To determine the thresholds to split, a sliding-window average depth file should be calculated with proper window size. In general, two peaks would be observed representing two subgenomes. In this case, we calculated depth distribution in per contig (`contig_average_coverage_from_depth.pl`), 1 mb, 500 kb, 200 kb, 100 kb and 50 kb. Caution: this strategy would be not efficient for draft genome with low contig N50 (See details in [Wu et al., 2021]()).
+
+![](https://github.com/bioinplant/Echinochloa_genome/blob/main/hic_scaffolding/eo/eo_fig/7.png)
+>Mapping depth distribution in different sliding-window size and length filtering.
 
 Finally, two peaks when depth equaled 13.35 and 36.26 were chosen as average mapping depth for two subgenomes.
 
@@ -34,6 +40,9 @@ In first-round clustering, contigs were clustered into three clusters(cluster1, 
 * c, contig3 was in uncluster, and its allelic contig contig8 was in cluster1, thus contig3 would be clustered into cluster2 (pass).
 * d, contig4 was in cluster1, while no allelic contigs were identified, thus it would be moved to uncluster (noActg).
 
+![](https://github.com/bioinplant/Echinochloa_genome/blob/main/hic_scaffolding/eo/eo_fig/8.png)
+> Workflow of 2nd-round clustering, including searching allelic contig, and checking allelic contig category
+
 In this way, clustering of allelic contigs would be more reliable than first-round results, in spite of the loss of genome coverage.
 
 	perl 2nd_actg_correct.pl 1st_clustering allelic_table
@@ -43,13 +52,15 @@ In this way, clustering of allelic contigs would be more reliable than first-rou
 Third-round clustering was to rescue these segments or contigs, based on linkage information from mate-pair reads, Hi-C data or other long-distance interaction signals. Via `BWA` or `bowtie2` and regular scripts implemented in other tools (e.g. `PreprocessSAMs.pl`), clean reads were mapped to the segments, and after removing adapters and duplication, the links information was obtained and linkages among segments were counted.
 
 For each segment, links were categorized as links to cluster1 (L1), cluster2 (L2) and uncluster and then bias index α was calculated as L2/L1 for each segment. Also average α for cluster1 and cluster2 were calculated (α1 and α2). Similar to first-round clustering, unclustered segments would be clustered by their bias indexes. If the index was less than (α1+R\*∆α) (where ∆α=α2-α1), the category was cluster1; if greater than (α2-R\*∆α), the category was cluster2; if either not, this segment still remained unclustered. 
+![](https://github.com/bioinplant/Echinochloa_genome/blob/main/hic_scaffolding/eo/eo_fig/9.png)
+>Diagram showing 3rd-round clustering and performance
+
 
 	perl 3rd_stat_linkage.pl stat_read cluster_info
 
 After third-round clustering, most unclustered segments would be categorized. To further rescue these unclustered segments, more iterations of third-round clustering could be carried by re-calculating linkages and re-clustering.
 
 	perl 4th_linkage_clustering_iteration.pl stat_read cluster_info Output
-
 
 Multi-round clustering: `1st depth clustering` → `2nd allelism clustering` → `3rd linkage clustering` → `4th linkage iteration` → `5th allelism clustering` → `6th linkage clustering` → `7th linkage iteration` → `8th linkage iteration` ( in 1st-round, P1=13.35, P2=36.26, R1=0.10, R2=0.50; in 2nd-round, E. haploclada cds annotation was used to build allelic contig table with shared loci number > 5 and shared proportion > 20%; in 3rd-round, R was set as 0.10).
 
@@ -66,7 +77,11 @@ Till now, most contigs of tetraploid have been phased into two subgenomes. Draft
 - Directional interaction intensity was calculated for each contig. Links between source contig and other target contigs were counted, then interaction intensity equaled link number divided by length of the target contig.
 
     	perl inter_contig_linkage_map_from_sam.pl SAM
-	
+
+![](https://github.com/bioinplant/Echinochloa_genome/blob/main/hic_scaffolding/eo/eo_fig/11.png)
+>Work flow of DipHiC chromosome building
+
+
 - Low-intensity and discordant inter-contig linkages were removed. Linkages with links less than 10 and intensity less than 10 (10 links per Mb) between contigs were filtered out. 
 
 		perl links_filtering.pl Links_stat
