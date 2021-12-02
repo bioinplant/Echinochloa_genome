@@ -1,5 +1,6 @@
 # Global *Echinochloa* Genomes Project
  scripts used in Global *Echinochloa* Genomes Project
+ ![](https://github.com/bioinplant/Echinochloa_genome/blob/main/barnyardgrass.png)
 - genome assembly
   - scaffolding of tetraploid *E. oryzicola* using DipHiC
   - scaffolding of hexaploid *E. colona* using DipHiC
