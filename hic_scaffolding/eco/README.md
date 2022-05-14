@@ -78,5 +78,5 @@ The same pipeline as that was implemented for *E. oryzicola* chromosome building
 
 
 ### Reference
-Wu et al., Genomic Insights into the Evolution of *Echinochloa* Species as a Weed and an Orphan Crop (2021), unpublished.
+Wu, D., Shen, E., Jiang, B. et al. Genomic insights into the evolution of Echinochloa species as weed and orphan crop. Nat Commun 13, 689 (2022). https://doi.org/10.1038/s41467-022-28359-9.
 
